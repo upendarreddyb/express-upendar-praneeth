@@ -44,18 +44,29 @@ router.post('/question', upload.single('file'), async (req, res) => {
 
 router.get('/data', (req, res) => {
   console.log(req.query.qeryfilter);
+  console.log(req.query.subject);
   const { page = 1, pageSize = req.query.limit } = req.query;
   const offset = (page - 1) * pageSize;
   var selectQuery = '';
   var queryCount = '';
-  if (req.query.qeryfilter === 'all') {
+  if (req.query.subject==='all' && req.query.qeryfilter === 'all') {
     selectQuery = `SELECT * FROM questions LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions`;
   }
-  if (req.query.qeryfilter != 'all') {
+  else if ( req.query.subject==='all' && req.query.qeryfilter != 'all') {
     selectQuery = `SELECT * FROM questions where deficulty_level='${req.query.qeryfilter}' LIMIT ?, ?`;
-    queryCount = `SELECT COUNT(*) AS totalCount FROM questions where deficulty_level='${req.query.qeryfilter}'`;
-    console.log(queryCount)
+    queryCount = `SELECT COUNT(*) AS totalCount FROM questions where deficulty_level='${req.query.qeryfilter}' `;
+    
+  }
+  else if ( req.query.subject!='all' && req.query.qeryfilter === 'all') {
+    selectQuery = `SELECT * FROM questions where subject='${req.query.subject}' LIMIT ?, ?`;
+    queryCount = `SELECT COUNT(*) AS totalCount FROM questions where  subject='${req.query.subject}' `;
+    
+  }
+ else if (req.query.subject!='all'  &&  req.query.qeryfilter != 'all') {
+    selectQuery = `SELECT * FROM questions where deficulty_level='${req.query.qeryfilter}' and subject='${req.query.subject}' LIMIT ?, ?`;
+    queryCount = `SELECT COUNT(*) AS totalCount FROM questions where deficulty_level='${req.query.qeryfilter}' and subject='${req.query.subject}'`;
+    console.log("acvdgscvjsd")
   }
 
   con.query(selectQuery, [offset, parseInt(pageSize)], (error, results) => {
