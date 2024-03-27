@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post('/question', upload.single('file'), async (req, res) => {
+router.post('/question', upload.single('file'), (req, res) => {
   var questiontype = "";
   var cDate = new Date();
   const sql = "insert into  questions (`question_type`,`question`,`subject`, `deficulty_level`,`grade_level`,`option_a`,`option_b`,`option_c`,`option_d`,`cdate`) VALUES (?)";
@@ -25,14 +25,14 @@ router.post('/question', upload.single('file'), async (req, res) => {
     questiontype,
     req.body.subject,
     req.body.deficulty,
-    req.body.gradelecel,
+    req.body.gradelevel,
     req.body.optionA,
     req.body.optionB,
     req.body.optionC,
     req.body.optionD,
     cDate
   ]
-  await con.query(sql, [values], (err, result) => {
+  con.query(sql, [values], (err, result) => {
     if (err) {
       console.error('Error creating data:', err.sqlMessage);
       return res.status(201).json({ msg: err.sqlMessage });
@@ -49,21 +49,21 @@ router.get('/data', (req, res) => {
   const offset = (page - 1) * pageSize;
   var selectQuery = '';
   var queryCount = '';
-  if (req.query.subject==='all' && req.query.qeryfilter === 'all') {
+  if (req.query.subject === 'all' && req.query.qeryfilter === 'all') {
     selectQuery = `SELECT * FROM questions LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions`;
   }
-  else if ( req.query.subject==='all' && req.query.qeryfilter != 'all') {
+  else if (req.query.subject === 'all' && req.query.qeryfilter != 'all') {
     selectQuery = `SELECT * FROM questions where deficulty_level='${req.query.qeryfilter}' LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions where deficulty_level='${req.query.qeryfilter}' `;
-    
+
   }
-  else if ( req.query.subject!='all' && req.query.qeryfilter === 'all') {
+  else if (req.query.subject != 'all' && req.query.qeryfilter === 'all') {
     selectQuery = `SELECT * FROM questions where subject='${req.query.subject}' LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions where  subject='${req.query.subject}' `;
-    
+
   }
- else if (req.query.subject!='all'  &&  req.query.qeryfilter != 'all') {
+  else if (req.query.subject != 'all' && req.query.qeryfilter != 'all') {
     selectQuery = `SELECT * FROM questions where deficulty_level='${req.query.qeryfilter}' and subject='${req.query.subject}' LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions where deficulty_level='${req.query.qeryfilter}' and subject='${req.query.subject}'`;
     console.log("acvdgscvjsd")
@@ -74,7 +74,7 @@ router.get('/data', (req, res) => {
       console.error('Error fetching data:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-    con.query(queryCount,(err, countResult) => {
+    con.query(queryCount, (err, countResult) => {
       if (err) {
         console.error('Error getting total count:', err);
         return res.status(500).json({ error: 'Internal Server Error' });
@@ -83,6 +83,24 @@ router.get('/data', (req, res) => {
       const totalPages = Math.ceil(totalCount / pageSize);
       res.json({ results, totalPages });
     });
+  });
+});
+
+
+router.post('/updatequestion', upload.single('file'), (req, res) => {
+  var questiontype = "";
+  req.body.qtype === "Text" ? questiontype = req.body.question : questiontype = req.file.filename;
+  var cDate = new Date();
+
+  const query = 'update questions set question_type=?,question=?,subject=?,deficulty_level=?,grade_level=?,option_a=?,option_b=?,option_c=?,option_d=?,update_time=? WHERE id = ?';
+
+  con.query(query, [req.body.qtype,questiontype,  req.body.subject,  req.body.deficulty, req.body.gradelevel,req.body.optionA, req.body.optionB,   req.body.optionC, req.body.optionD,cDate,req.body.id], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error updating status' });
+    } else {
+      res.json({ message: 'Status updated successfully' });
+    }
   });
 });
 
