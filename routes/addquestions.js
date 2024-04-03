@@ -49,20 +49,24 @@ router.get('/data', (req, res) => {
   const offset = (page - 1) * pageSize;
   var selectQuery = '';
   var queryCount = '';
+  
   if (req.query.subject === 'all' && req.query.qeryfilter === 'all') {
     selectQuery = `SELECT * FROM questions LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions`;
   }
+
   else if (req.query.subject === 'all' && req.query.qeryfilter != 'all') {
     selectQuery = `SELECT * FROM questions where deficulty_level='${req.query.qeryfilter}' LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions where deficulty_level='${req.query.qeryfilter}' `;
 
   }
+
   else if (req.query.subject != 'all' && req.query.qeryfilter === 'all') {
     selectQuery = `SELECT * FROM questions where subject='${req.query.subject}' LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions where  subject='${req.query.subject}' `;
 
   }
+
   else if (req.query.subject != 'all' && req.query.qeryfilter != 'all') {
     selectQuery = `SELECT * FROM questions where deficulty_level='${req.query.qeryfilter}' and subject='${req.query.subject}' LIMIT ?, ?`;
     queryCount = `SELECT COUNT(*) AS totalCount FROM questions where deficulty_level='${req.query.qeryfilter}' and subject='${req.query.subject}'`;
@@ -86,14 +90,11 @@ router.get('/data', (req, res) => {
   });
 });
 
-
 router.post('/updatequestion', upload.single('file'), (req, res) => {
   var questiontype = "";
   req.body.qtype === "Text" ? questiontype = req.body.question : questiontype = req.file.filename;
   var cDate = new Date();
-
   const query = 'update questions set question_type=?,question=?,subject=?,deficulty_level=?,grade_level=?,option_a=?,option_b=?,option_c=?,option_d=?,update_time=? WHERE id = ?';
-
   con.query(query, [req.body.qtype,questiontype,  req.body.subject,  req.body.deficulty, req.body.gradelevel,req.body.optionA, req.body.optionB,   req.body.optionC, req.body.optionD,cDate,req.body.id], (err, result) => {
     if (err) {
       console.error(err);
